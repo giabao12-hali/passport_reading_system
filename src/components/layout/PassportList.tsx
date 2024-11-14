@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { ApiPassportResponse } from "../../api/interfaces";
-import RecylingBinIcon from "../icons/RecylingBin";
 import ImageModal from "../UI/Modal/ImageModal";
-import { Alert, Spinner, Table, Tooltip } from "flowbite-react";
+import { Spinner, Table, Tooltip } from "flowbite-react";
 import { Info } from "lucide-react";
 
 interface PassportListProps {
@@ -16,7 +15,7 @@ interface PassportListProps {
     onDeletePassport: (id: number) => void;
 }
 
-const PassportList: React.FC<PassportListProps> = ({ formatDate, formatSex, loadingListPassport, dataExtract, onDeletePassport }) => {
+const PassportList: React.FC<PassportListProps> = ({ formatDate, formatSex, loadingListPassport, dataExtract }) => {
     //#region Modal open Passport Image
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);

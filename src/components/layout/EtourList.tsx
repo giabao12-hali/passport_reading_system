@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React from "react";
 import { eTourCustomer } from "../../api/interfaces";
-import ImageModal from "../UI/Modal/ImageModal";
-import { Alert, Spinner, Table, Tooltip } from "flowbite-react";
+import { Spinner, Table, Tooltip } from "flowbite-react";
 import { Info } from "lucide-react";
 
 interface EtourListProps {
@@ -13,18 +12,18 @@ interface EtourListProps {
 
 const ETourList: React.FC<EtourListProps> = ({ dataEtour, formatDate, formatSex, loadingETour }) => {
     //#region Modal open Passport Image
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+    // const [isModalOpen, setIsModalOpen] = useState(false);
+    // const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
 
-    const handleViewImage = (imageUrl: string) => {
-        setSelectedImageUrl(imageUrl);
-        setIsModalOpen(true);
-    }
+    // const handleViewImage = (imageUrl: string) => {
+    //     setSelectedImageUrl(imageUrl);
+    //     setIsModalOpen(true);
+    // }
 
-    const closeModal = () => {
-        setIsModalOpen(false);
-        setSelectedImageUrl(null);
-    }
+    // const closeModal = () => {
+    //     setIsModalOpen(false);
+    //     setSelectedImageUrl(null);
+    // }
     //#endregion
 
     //#region Loading & Error

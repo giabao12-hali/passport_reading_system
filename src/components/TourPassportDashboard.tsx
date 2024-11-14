@@ -7,15 +7,15 @@ import PassportUpload from "./layout/PassportUpload";
 import CustomToast from "./UI/CustomToast";
 import CopyLinkModal from "./UI/Modal/CopyLinkModal";
 import PassportEtourTableLayout from "./layout/TableLayout";
-import { Card, FileInput, Label, Tooltip } from "flowbite-react";
-import { Info } from "lucide-react";
+import { FileInput, Label } from "flowbite-react";
+// import { Info } from "lucide-react";
 
 const TourPassportDashboard: React.FC = () => {
 
     const [dataExtract, setDataExtract] = useState<ApiPassportResponse[]>([]); //* Lưu list passport
     const [dataEtour, setDataEtour] = useState<eTourCustomer[]>([]); //* Lưu list eTour
     const [dataUpload, setDataUpload] = useState<ApiPassportResponse[]>([]); //* Lưu list upload
-    const [etourUpload, setEtourUpload] = useState<eTourCustomer[]>([]); //* Lưu list upload eTour
+    // const [etourUpload, setEtourUpload] = useState<eTourCustomer[]>([]); //* Lưu list upload eTour
 
 
 
@@ -110,9 +110,9 @@ const TourPassportDashboard: React.FC = () => {
         if (!files) return;
         try {
             setLoadingPassportUpload(true);
-            const { dataUpload, etourUpload } = await fetchUploadApi(files, bookingId);
+            const dataUpload = await fetchUploadApi(files, bookingId);
             setDataUpload(dataUpload);
-            setEtourUpload(etourUpload);
+            // setEtourUpload(etourUpload);
         } catch (err) {
             console.error(err);
         } finally {

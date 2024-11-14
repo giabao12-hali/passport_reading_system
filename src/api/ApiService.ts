@@ -25,9 +25,10 @@ export const fetchUploadApi = async (files: FileList, bookingId: string) => {
   );
 
   const dataUpload = response.data.dataExtract as ApiPassportResponse[];
-  const etourUpload = response.data.dataEtour
+  // const etourUpload = response.data.dataEtour
   // const dataEtour = response.data.dataEtour;
-  return { dataUpload, etourUpload };
+  // return { dataUpload, etourUpload };
+  return dataUpload
 };
 
 export const savePassportDataApi = async (
