@@ -1,3 +1,5 @@
+import { ApiPassportResponse } from "./passport.interfaces";
+
 export interface ApiEtourResponse {
   status: number;
   message: string;
@@ -23,6 +25,12 @@ export interface IDentificationInfo {
   issueDate: string;
   expireDate: string;
   documentNumber: string;
+}
+
+export interface ApiTotalResponse{
+  totalGuest: number;
+  etour: eTourCustomer[];
+  extract: ApiPassportResponse[];
 }
 
 export interface eTourCustomer{

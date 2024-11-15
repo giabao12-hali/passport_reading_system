@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import ButtonFloatActions from "./UI/ButtonFloatActions";
-import { ApiPassportResponse, eTourCustomer } from "../api/interfaces";
+// import ButtonFloatActions from "./UI/ButtonFloatActions";
+import { ApiPassportResponse, ApiTotalResponse, eTourCustomer } from "../api/interfaces";
 import { deletePassportDataApi, fetchUploadApi, savePassportDataApi, showPassportDataApi } from "../api/ApiService";
 import PassportUpload from "./layout/PassportUpload";
 import CustomToast from "./UI/CustomToast";
 import CopyLinkModal from "./UI/Modal/CopyLinkModal";
 import PassportEtourTableLayout from "./layout/TableLayout";
 import { FileInput, Label } from "flowbite-react";
+import ButtonFloatActionsMobile from "./UI/ButtonFloatActionsMobile";
 // import { Info } from "lucide-react";
 
 const TourPassportDashboard: React.FC = () => {
@@ -16,6 +17,11 @@ const TourPassportDashboard: React.FC = () => {
     const [dataEtour, setDataEtour] = useState<eTourCustomer[]>([]); //* Lưu list eTour
     const [dataUpload, setDataUpload] = useState<ApiPassportResponse[]>([]); //* Lưu list upload
     // const [etourUpload, setEtourUpload] = useState<eTourCustomer[]>([]); //* Lưu list upload eTour
+    const [totalGuest, setTotalGuest] = useState<ApiTotalResponse>({
+        totalGuest: 0,
+        etour: dataEtour,
+        extract: dataExtract
+    });
 
 
 
@@ -79,11 +85,11 @@ const TourPassportDashboard: React.FC = () => {
                 const response = await showPassportDataApi(bookingId);
                 setDataExtract(response.dataExtract);
                 setDataEtour(response.dataEtour);
+                setTotalGuest(response);
             } catch (error) {
                 console.log("Error fetching passport data", error);
             } finally {
                 setLoading(false);
-                // setLoadingETour(false);
             }
         }
         showPassportData();
@@ -108,11 +114,18 @@ const TourPassportDashboard: React.FC = () => {
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (!files) return;
+        const currentUploads = dataUpload.length;
+        const totalNewFiles = files.length;
+
+        if (currentUploads + totalNewFiles > totalGuest.totalGuest) {
+            showToastMessage(`Bạn chỉ có thể upload tối đa ${totalGuest.totalGuest} ảnh theo số lượng eTour.`, "error");
+            event.target.value = "";
+            return;
+        }
         try {
             setLoadingPassportUpload(true);
-            const dataUpload = await fetchUploadApi(files, bookingId);
-            setDataUpload(dataUpload);
-            // setEtourUpload(etourUpload);
+            const uploadFile = await fetchUploadApi(files, bookingId);
+            setDataUpload((prevUpload) => [...prevUpload, ...uploadFile]);
         } catch (err) {
             console.error(err);
         } finally {
@@ -135,6 +148,17 @@ const TourPassportDashboard: React.FC = () => {
         }
     }
 
+    const handleSaveAndUpdateEtour = async () => {
+        const filteredDataCombine = [...dataExtract];
+        const filteredData = removeNullFields(filteredDataCombine);
+        console.log("Dữ liệu Passport: ", JSON.stringify(filteredData, null, 2));
+        showToastMessage("Đang cập nhật dữ liệu...", "info");
+    };
+
+    const handleSaveTemp = (updatedData: ApiPassportResponse[]) => {
+        setDataUpload(updatedData);
+    };
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const removeNullFields = (data: any): any => {
         if (Array.isArray(data)) {
@@ -147,23 +171,6 @@ const TourPassportDashboard: React.FC = () => {
         }
         return data;
     };
-
-    const handleSaveAndUpdateEtour = async () => {
-        await savePassportDataApi(dataUpload);
-
-        const filteredDataCombine = [...dataExtract, ...dataUpload];
-        const filteredData = removeNullFields(filteredDataCombine);
-        console.log("Dữ liệu Passport: ", JSON.stringify(filteredData, null, 2));
-        showToastMessage("Đang cập nhật dữ liệu...", "info");
-        setTimeout(() => {
-            window.location.reload();
-        }, 3000);
-    };
-
-    const handleSaveTemp = (updatedData: ApiPassportResponse[]) => {
-        setDataUpload(updatedData);
-    }
-
     //#endregion
 
     //#region Delete Passport
@@ -208,59 +215,33 @@ const TourPassportDashboard: React.FC = () => {
                         <FileInput
                             id="multiple-file-upload"
                             multiple helperText="Giới hạn tối đa 3MB..."
-                            onChange={handleFileUpload} />
-                    </div>
-                    {/* <div>
-                        <label className="block mb-2 text-sm font-medium text-gray-900 dark:text-white mobile:text-center" htmlFor="multiple_files">
-                            Đính kèm hình ảnh Passport
-                        </label>
-                        <input
-                            className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                            id="multiple_files"
-                            type="file"
-                            multiple
-                            accept="image/*"
                             onChange={handleFileUpload}
-                            required
+                            accept="image/*"
                         />
-                    </div> */}
+                    </div>
                 </div>
-                {/* <div className="grid grid-cols-2 my-12 gap-12">
-                    <EtourListTable dataEtour={dataEtour} formatDate={formatDate} formatSex={formatSex} loadingETour={loadingETour}/>
-                    <PassportListTable dataExtract={dataExtract} formatDate={formatDate} formatSex={formatSex} loadingListPassport={loadingListPassport} />
-                </div> */}
-                <div className="flex items-center gap-2 mt-12 mobile:flex-col mobile:mt-4">
-                    <div className="inline-flex items-center gap-12">
+                <div className="flex gap-2 mt-12 flex-col border-b border-solid border-black desktop:w-1/2 p-2.5 mobile:mt-4 mb-4 mobile:w-full">
+                    <h1 className="font-semibold text-gray-900 uppercase">Ghi chú:</h1>
+                    <div className="flex items-center gap-12 mobile:flex-col mobile:gap-2">
                         <div className="flex items-center gap-4">
                             <div className="border border-solid border-gray-100 bg-cyan-200 p-2 rounded-full"></div>
                             <p>eTour</p>
                         </div>
                         <div className="flex items-center gap-4">
                             <div className="border border-solid border-gray-100 bg-green-300 p-2 rounded-full"></div>
-                            <p>Dữ liệu đã lưu tạm thời</p>
+                            <p className="text-balance">Dữ liệu đã lưu tạm thời</p>
                         </div>
                         <div className="flex items-center gap-4">
                             <div>✅</div>
-                            <p>Đã đối soát</p>
+                            <p className="text-balance">Đã đối soát</p>
                         </div>
                         <div className="flex items-center gap-4">
                             <div>❌</div>
-                            <p>Chưa đối soát</p>
+                            <p className="text-balance">Chưa đối soát</p>
                         </div>
                     </div>
-                    {/* <div className="flex items-center justify-center gap-2">
-                        <h1 className="font-semibold text-2xl text-center">Đối chiếu Danh sách eTour</h1>
-                        <Tooltip content="Danh sách đã lưu từ hệ thống eTour">
-                            <Info className="size-5 text-cyan-500 translate-y-0.5" />
-                        </Tooltip>
-                        <h1 className="font-semibold text-2xl text-center">và</h1>
-                        <h1 className="font-semibold text-2xl text-center">Đối chiếu Danh sách đã lưu</h1>
-                        <Tooltip content="Danh sách đã lưu từ hệ thống">
-                            <Info className="size-5 text-cyan-500 translate-y-0.5" />
-                        </Tooltip>
-                    </div> */}
                 </div>
-                <div className="w-full my-4">
+                <div className="w-full my-12">
                     <PassportEtourTableLayout
                         formatDate={formatDate}
                         formatSex={formatSex}
@@ -268,36 +249,27 @@ const TourPassportDashboard: React.FC = () => {
                         dataExtract={dataExtract}
                         dataEtour={dataEtour}
                         onDeletePassport={handleDeletePassport}
+                        onSaveAndUpdateEtour={handleSaveAndUpdateEtour}
+                        totalGuest={totalGuest}
                     />
                 </div>
-
-                {/* <div className="grid grid-cols-2 my-12 gap-12">
-                    <ETourList dataEtour={dataEtour} formatDate={formatDate} formatSex={formatSex} loadingETour={loadingETour} />
-                    <PassportList
-                        bookingId={bookingId}
-                        formatDate={formatDate}
-                        formatSex={formatSex}
-                        onDeleteShowToast={() => showToastMessage("Xóa thành công!", "success")}
-                        loadingListPassport={loadingListPassport}
-                        onDataExtractUpdate={handleDataExtractUpdate}
-                        dataExtract={dataExtract}
-                        onDeletePassport={handleDeletePassport}
-                    />
-                </div> */}
                 <hr />
                 <div className="mt-4">
                     <PassportUpload
                         dataUpload={dataUpload}
-                        // etourUpload={etourUpload}
                         formatDate={formatDate}
                         formatSex={formatSex}
                         loadingPassportUpload={loadingPassportUpload}
                         onSaveTemp={handleSaveTemp}
                         onDeletePassportUpload={handleDeletePassportUpload}
+                        onSave={handleSave}
                     />
                 </div>
             </div>
-            <ButtonFloatActions onSave={handleSave} onSaveAndUpdateEtour={handleSaveAndUpdateEtour} />
+            <ButtonFloatActionsMobile onSave={handleSave} onSaveAndUpdateEtour={handleSaveAndUpdateEtour} />
+            {/* <div className="mobile:hidden">
+                <ButtonFloatActions onSave={handleSave} onSaveAndUpdateEtour={handleSaveAndUpdateEtour} />
+            </div> */}
             <CopyLinkModal isOpen={isModalOpen} qrCode={qrCode} onClose={QrCodeModalClose} copyLink={handleCopyUrl} />
             {showToast && <CustomToast message={toastMessage} type={toastType} onClose={() => setShowToast(false)} />}
         </>

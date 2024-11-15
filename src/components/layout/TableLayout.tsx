@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { ApiPassportResponse, eTourCustomer } from "../../api/interfaces";
-import { Badge, Spinner, Table, Tooltip } from "flowbite-react";
-import { Image, Trash2 } from "lucide-react";
+import { ApiPassportResponse, ApiTotalResponse, eTourCustomer } from "../../api/interfaces";
+import { Alert, Badge, Button, Spinner, Table, Tooltip } from "flowbite-react";
+import { Image, Info, Trash2 } from "lucide-react";
 import ImageModal from "../UI/Modal/ImageModal";
 
 interface PassportEtourTableLayoutProps {
@@ -11,9 +11,11 @@ interface PassportEtourTableLayoutProps {
     dataExtract: ApiPassportResponse[];
     dataEtour: eTourCustomer[];
     onDeletePassport: (id: number) => Promise<void>;
+    onSaveAndUpdateEtour: () => void;
+    totalGuest: ApiTotalResponse;
 }
 
-const PassportEtourTableLayout: React.FC<PassportEtourTableLayoutProps> = ({ formatDate, formatSex, loading, dataExtract, dataEtour, onDeletePassport }) => {
+const PassportEtourTableLayout: React.FC<PassportEtourTableLayoutProps> = ({ formatDate, formatSex, loading, dataExtract, dataEtour, onDeletePassport, onSaveAndUpdateEtour, totalGuest }) => {
     //#region Modal open Passport Image
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
@@ -41,12 +43,34 @@ const PassportEtourTableLayout: React.FC<PassportEtourTableLayoutProps> = ({ for
     }
     //#endregion
 
+    //#region Tính tổng
+    const nonSimilarExtract = dataExtract.filter((passport) => passport.isSimilar === false).length;
+    const currentTotalGuest = nonSimilarExtract + dataEtour.length;
+    console.log("currentTotalGuest", currentTotalGuest);
+    const isGuestLimitedExceed = currentTotalGuest > totalGuest.totalGuest;
+    //#endregion
+
     return (
         <div className="space-y-4">
-
+            <div className="flex justify-between items-center">
+                <h3 className="font-semibold">Số lượng khách eTour: {totalGuest.totalGuest} khách</h3>
+                {isGuestLimitedExceed && (
+                    <Alert color="red">
+                        <div className="flex items-center gap-4">
+                            <Info />
+                            <span>Danh sách khách chưa đối soát vượt quá mức số cho phép của số lượng khách eTour</span>
+                        </div>
+                    </Alert>
+                )}
+                <Button onClick={onSaveAndUpdateEtour} disabled={isGuestLimitedExceed}>
+                    <p>
+                        Cập nhật eTour
+                    </p>
+                </Button>
+            </div>
             <div className="overflow-x-auto max-h-96 overflow-y-auto">
                 <Table striped>
-                    <Table.Head>
+                    <Table.Head className="sticky top-0">
                         <Table.HeadCell className=" text-black">STT</Table.HeadCell>
                         <Table.HeadCell className=" text-black">Loại dữ liệu</Table.HeadCell>
                         <Table.HeadCell className=" text-black">Họ tên</Table.HeadCell>
@@ -99,7 +123,7 @@ const PassportEtourTableLayout: React.FC<PassportEtourTableLayoutProps> = ({ for
                                     {dataExtract
                                         .filter((passport) => passport.isSimilar && passport.passportNo === etour.passportNo)
                                         .map((passport, extractIndex) => (
-                                            <Table.Row key={`extract-${extractIndex}`} className="bg-green-100 text-gray-900">
+                                            <Table.Row key={extractIndex} className="bg-green-100 text-gray-900">
                                                 <Table.Cell className="text-lg font-bold">{etourIndex + 1}</Table.Cell>
                                                 <Table.Cell className="font-bold">
                                                     <Badge color="success">
@@ -184,7 +208,7 @@ const PassportEtourTableLayout: React.FC<PassportEtourTableLayoutProps> = ({ for
                         {dataExtract
                             .filter((passport) => !passport.isSimilar)
                             .map((passport, index) => (
-                                <Table.Row key={`no-match-${index}`} className="bg-yellow-100 text-gray-900">
+                                <Table.Row key={index} className="bg-yellow-100 text-gray-900">
                                     <Table.Cell className="text-lg font-bold">{dataEtour.length + index + 1}</Table.Cell>
                                     <Table.Cell className="font-bold">
                                         <Badge color="success">

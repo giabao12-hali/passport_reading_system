@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { ApiPassportResponse } from "../../api/interfaces";
 import ImageModal from "../UI/Modal/ImageModal";
 import { Info, Trash2, Image, Save, X, RotateCw, Edit, IdCard, User, MapPin, Earth, TicketsPlane } from "lucide-react";
-import { Spinner, Table, Tooltip } from "flowbite-react";
+import { Button, Spinner, Table, Tooltip } from "flowbite-react";
 import InputWithIcon from "../icons/InputWithIcon";
 
 interface PassportUploadProps {
@@ -12,34 +12,51 @@ interface PassportUploadProps {
     loadingPassportUpload: boolean
     onDeletePassportUpload: (index: number) => void;
     onSaveTemp: (updatedData: ApiPassportResponse[]) => void;
+    onSave: () => void;
 }
 
-const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate, formatSex, loadingPassportUpload, onSaveTemp, onDeletePassportUpload }) => {
+const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate, formatSex, loadingPassportUpload, onSaveTemp, onDeletePassportUpload, onSave }) => {
 
     //#region Editing Fields
     const [editedData, setEditedData] = useState<ApiPassportResponse[]>([]);
-    const [editMode, setEditMode] = useState(false);
+    const [editRows, setEditRows] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         setEditedData(dataUpload);
     }, [dataUpload]);
 
     // Enable editing for all rows
-    const enableEdit = () => setEditMode(true);
+    const enableEdit = (index: number) => {
+        const newEditRows = new Set(editRows);
+        newEditRows.add(index);
+        setEditRows(newEditRows);
+    };
 
     // Save edited data and exit edit mode
-    const saveEdit = () => {
-        setEditMode(false);
-        onSaveTemp(editedData);  // Send the edited data to parent component
+    const saveEdit = (index: number) => {
+        const newEditRows = new Set(editRows);
+        newEditRows.delete(index);
+        setEditRows(newEditRows);
+        onSaveTemp(editedData);
     };
 
     // Reset edited data to original
-    const resetEdit = () => setEditedData(dataUpload);
+    const resetEdit = (index: number) => {
+        const newEditedData = [...editedData];
+        newEditedData[index] = { ...dataUpload[index] };
+        setEditedData(newEditedData);
+    };
 
     // Cancel editing mode without saving
-    const cancelEdit = () => {
-        setEditMode(false);
-        setEditedData(dataUpload);  // Reset to initial state
+    const cancelEdit = (index: number) => {
+        const newEditRows = new Set(editRows);
+        newEditRows.delete(index);  // Xóa hàng khỏi chế độ chỉnh sửa
+        setEditRows(newEditRows);
+
+        // Khôi phục dữ liệu gốc từ `dataUpload` vào `editedData`
+        const newEditedData = [...editedData];
+        newEditedData[index] = { ...dataUpload[index] };
+        setEditedData(newEditedData);
     };
 
     const handleInputChange = (index: number, field: keyof ApiPassportResponse, value: string | boolean) => {
@@ -47,12 +64,10 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
         updatedData[index] = { ...updatedData[index], [field]: value };
         setEditedData(updatedData);
     };
+
     const handleDateInputChange = (index: number, field: keyof ApiPassportResponse, value: string) => {
         const updatedData = [...editedData];
-        updatedData[index] = {
-            ...updatedData[index],
-            [field]: value
-        };
+        updatedData[index] = { ...updatedData[index], [field]: value };
         setEditedData(updatedData);
     };
     //#endregion
@@ -96,6 +111,13 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                     <Info className="size-5 text-cyan-500 translate-y-0.5" />
                 </Tooltip>
             </div>
+            <div className="flex items-center justify-end">
+                <Button onClick={onSave} color="success">
+                    <p>
+                        Lưu tạm
+                    </p>
+                </Button>
+            </div>
             <div className="overflow-x-auto">
                 <Table striped>
                     <Table.Head>
@@ -117,7 +139,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                             <Table.Row key={index}>
                                 <Table.Cell>{index + 1}</Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <InputWithIcon
                                             Icon={<User />}
                                             placeholder="Họ tên"
@@ -131,7 +153,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                     )}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <select
                                             value={passport.sex ? "Nam" : "Nữ"}
                                             onChange={(e) => handleInputChange(index, "sex", e.target.value === "Nam" ? true : false)}
@@ -145,7 +167,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                     )}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <InputWithIcon
                                             Icon={<MapPin />}
                                             placeholder="Nơi sinh"
@@ -159,7 +181,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                     )}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <InputWithIcon
                                             Icon={<Earth />}
                                             placeholder="Quốc tịch"
@@ -173,7 +195,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                     )}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <input
                                             type="date"
                                             value={passport.dateOfBirth ?? ""}
@@ -185,7 +207,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                     )}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <InputWithIcon
                                             Icon={<TicketsPlane />}
                                             placeholder="Số Passport"
@@ -199,7 +221,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                     )}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <input
                                             type="date"
                                             value={passport.dateOfIssue ?? ""}
@@ -211,7 +233,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                     )}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <input
                                             type="date"
                                             value={passport.dateOfExpiry ?? ""}
@@ -223,7 +245,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                     )}
                                 </Table.Cell>
                                 <Table.Cell>
-                                    {editMode ? (
+                                    {editRows.has(index) ? (
                                         <InputWithIcon
                                             Icon={<IdCard />}
                                             placeholder="Số CCCD/CMND"
@@ -239,20 +261,20 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                 </Table.Cell>
                                 <Table.Cell>
                                     <div className="flex items-center gap-2">
-                                        {editMode ? (
+                                        {editRows.has(index) ? (
                                             <>
                                                 <Tooltip content="Lưu">
-                                                    <button type="button" onClick={saveEdit}>
+                                                    <button type="button" onClick={() => saveEdit(index)}>
                                                         <Save className="text-green-500" />
                                                     </button>
                                                 </Tooltip>
                                                 <Tooltip content="Hủy">
-                                                    <button type="button" onClick={cancelEdit}>
+                                                    <button type="button" onClick={() => cancelEdit(index)}>
                                                         <X className="text-red-500" />
                                                     </button>
                                                 </Tooltip>
                                                 <Tooltip content="Reset">
-                                                    <button type="button" onClick={resetEdit}>
+                                                    <button type="button" onClick={() => resetEdit(index)}>
                                                         <RotateCw className="text-yellow-500" />
                                                     </button>
                                                 </Tooltip>
@@ -260,7 +282,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                         ) : (
                                             <>
                                                 <Tooltip content="Chỉnh sửa">
-                                                    <button type="button" onClick={enableEdit}>
+                                                    <button type="button" onClick={() => enableEdit(index)}>
                                                         <Edit className="text-blue-500" />
                                                     </button>
                                                 </Tooltip>
@@ -282,49 +304,6 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
                                 </Table.Cell>
                             </Table.Row>
                         ))}
-                        {/* {dataUpload.length > 0 ? (
-                            dataUpload.map((passport, index) => (
-                                <Table.Row key={index}>
-                                    <Table.Cell>
-                                        {index + 1}
-                                    </Table.Cell>
-                                    <Table.Cell className="font-bold text-gray-900 dark:text-white">
-                                        {passport.fullName ?? "Chưa có thông tin"}
-                                    </Table.Cell>
-                                    <Table.Cell>{passport.sex !== undefined ? formatSex(passport.sex) : "Chưa có thông tin"}</Table.Cell>
-                                    <Table.Cell>{passport.placeOfBirth ?? "Chưa có thông tin"}</Table.Cell>
-                                    <Table.Cell>{passport.nationality ?? "Chưa có thông tin"}</Table.Cell>
-                                    <Table.Cell>{passport.dateOfBirth ? formatDate(passport.dateOfBirth) : "Chưa có thông tin"}</Table.Cell>
-                                    <Table.Cell>{passport.passportNo ?? "Chưa có thông tin"}</Table.Cell>
-                                    <Table.Cell>{passport.dateOfIssue ? formatDate(passport.dateOfIssue) : "Chưa có thông tin"}</Table.Cell>
-                                    <Table.Cell>{passport.dateOfExpiry ? formatDate(passport.dateOfExpiry) : "Chưa có thông tin"}</Table.Cell>
-                                    <Table.Cell>{passport.idCardNo ?? "Chưa có thông tin"}</Table.Cell>
-                                    <Table.Cell>
-                                        <div className="flex items-center gap-2">
-                                            <Tooltip content="Xem hình ảnh">
-                                                <button
-                                                    onClick={() => passport.imageUrl && handleViewImage(passport.imageUrl)}
-                                                >
-                                                    <Image className="text-cyan-500 hover:text-cyan-700 hover:transition-all hover:duration-300 hover:ease-in-out" />
-                                                </button>
-                                            </Tooltip>
-                                            <Tooltip content="Xóa"
-                                            >
-                                                <button
-                                                    // onClick={() => passport.passportNo && onDeletePassportUpload(passport.passportNo)}
-                                                >
-                                                    <Trash2 className="text-red-500 hover:text-red-700 hover:transition-all hover:duration-300 hover:ease-in-out" />
-                                                </button>
-                                            </Tooltip>
-                                        </div>
-                                    </Table.Cell>
-                                </Table.Row>
-                            ))
-                        ) : (
-                            <Table.Row>
-                                <Table.Cell colSpan={11} className="text-center uppercase font-semibold">Không có dữ liệu đã lưu</Table.Cell>
-                            </Table.Row>
-                        )} */}
                     </Table.Body>
                 </Table>
                 <ImageModal isOpen={isModalOpen} imageUrl={selectedImageUrl || ""} onClose={closeModal} />

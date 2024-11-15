@@ -11,7 +11,7 @@ export default {
     screens: {
       'mobile': {'min': '320px', 'max': '767px'},
       'tablet': {'min': '768px', 'max': '1023px'},
-      'desktop': {'min': '1024px', 'max': '1279px'},
+      'desktop': {'min': '1024px'},
     },
   },
   plugins: [

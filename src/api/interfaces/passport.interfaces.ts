@@ -1,8 +1,6 @@
-import { ETourBooking } from "./eTour.interfaces";
-
 export interface ApiPassportResponse {
     id?: number;
-    bookingId?: ETourBooking["bookingId"];
+    bookingId?: string;
     fullName?: string;
     nationality?: string;
     address?: string;
