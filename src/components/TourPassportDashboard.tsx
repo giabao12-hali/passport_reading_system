@@ -8,7 +8,7 @@ import CustomToast from "./UI/CustomToast";
 import CopyLinkModal from "./UI/Modal/CopyLinkModal";
 import PassportEtourTableLayout from "./layout/TableLayout";
 import { FileInput, Label } from "flowbite-react";
-import ButtonFloatActionsMobile from "./UI/ButtonFloatActionsMobile";
+// import ButtonFloatActionsMobile from "./UI/ButtonFloatActionsMobile";
 // import { Info } from "lucide-react";
 
 const TourPassportDashboard: React.FC = () => {
@@ -117,7 +117,7 @@ const TourPassportDashboard: React.FC = () => {
         const currentUploads = dataUpload.length;
         const totalNewFiles = files.length;
 
-        if (currentUploads + totalNewFiles > totalGuest.totalGuest) {
+        if (totalGuest.totalGuest !== 0 && (currentUploads + totalNewFiles > totalGuest.totalGuest)) {
             showToastMessage(`Bạn chỉ có thể upload tối đa ${totalGuest.totalGuest} ảnh theo số lượng eTour.`, "error");
             event.target.value = "";
             return;
@@ -148,10 +148,15 @@ const TourPassportDashboard: React.FC = () => {
         }
     }
 
-    const handleSaveAndUpdateEtour = async () => {
-        const filteredDataCombine = [...dataExtract];
+    const handleSaveAndUpdateEtour = () => {
+        const filteredDataCombine = [dataExtract];
+        console.log("filteredDataCombine", filteredDataCombine);
         const filteredData = removeNullFields(filteredDataCombine);
-        console.log("Dữ liệu Passport: ", JSON.stringify(filteredData, null, 2));
+
+        const message = {copyAll: JSON.stringify(filteredData, null, 2)};
+        console.log("Dữ liệu Passport: ", message);
+
+        window.parent.postMessage(message, '*');
         showToastMessage("Đang cập nhật dữ liệu...", "info");
     };
 
@@ -222,7 +227,7 @@ const TourPassportDashboard: React.FC = () => {
                 </div>
                 <div className="flex gap-2 mt-12 flex-col border-b border-solid border-black desktop:w-1/2 p-2.5 mobile:mt-4 mb-4 mobile:w-full">
                     <h1 className="font-semibold text-gray-900 uppercase">Ghi chú:</h1>
-                    <div className="flex items-center gap-12 mobile:flex-col mobile:gap-2">
+                    <div className="flex gap-12 mobile:flex-col mobile:gap-2">
                         <div className="flex items-center gap-4">
                             <div className="border border-solid border-gray-100 bg-cyan-200 p-2 rounded-full"></div>
                             <p>eTour</p>
@@ -266,7 +271,7 @@ const TourPassportDashboard: React.FC = () => {
                     />
                 </div>
             </div>
-            <ButtonFloatActionsMobile onSave={handleSave} onSaveAndUpdateEtour={handleSaveAndUpdateEtour} />
+            {/* <ButtonFloatActionsMobile onSave={handleSave} onSaveAndUpdateEtour={handleSaveAndUpdateEtour} /> */}
             {/* <div className="mobile:hidden">
                 <ButtonFloatActions onSave={handleSave} onSaveAndUpdateEtour={handleSaveAndUpdateEtour} />
             </div> */}

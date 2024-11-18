@@ -6,7 +6,7 @@ export const fetchUploadApi = async (files: FileList, bookingId: string) => {
   Array.from(files).forEach((file) => formData.append("files", file));
 
   const response = await axios.post(
-    `http://ocr-images.vietravel.com/extract-o-imgs-compare?bookingId=${bookingId}`,
+    `https://ocr-images.vietravel.com/extract-o-imgs-compare?bookingId=${bookingId}`,
     formData,{
       headers: {
         "Content-Type": "multipart/form-data",
@@ -23,7 +23,7 @@ export const savePassportDataApi = async (
 ) => {
   try {
     const response = await axios.post(
-      "http://ocr-images.vietravel.com/post-id_card_infos",
+      "https://ocr-images.vietravel.com/post-id_card_infos",
       passportData,
       {
         headers: {
@@ -58,7 +58,7 @@ export const showPassportDataApi = async (bookingId: string) => {
 export const deletePassportDataApi = async (id: number) => {
   try {
     const response = await axios.delete(
-      `http://ocr-images.vietravel.com/delete-by-id?id=${id}`
+      `https://ocr-images.vietravel.com/delete-by-id?id=${id}`
     );
     return response.data;
   } catch (error) {

@@ -46,15 +46,14 @@ const PassportEtourTableLayout: React.FC<PassportEtourTableLayoutProps> = ({ for
     //#region Tính tổng
     const nonSimilarExtract = dataExtract.filter((passport) => passport.isSimilar === false).length;
     const currentTotalGuest = nonSimilarExtract + dataEtour.length;
-    console.log("currentTotalGuest", currentTotalGuest);
-    const isGuestLimitedExceed = currentTotalGuest > totalGuest.totalGuest;
+    const isGuestLimitedExceed = totalGuest.totalGuest !== 0 && currentTotalGuest > totalGuest.totalGuest;
     //#endregion
 
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <h3 className="font-semibold">Số lượng khách eTour: {totalGuest.totalGuest} khách</h3>
-                {isGuestLimitedExceed && (
+                <h3 className="font-semibold text-balance">Số lượng khách eTour: {totalGuest.totalGuest} khách</h3>
+                {totalGuest.totalGuest !== 0 && isGuestLimitedExceed && (
                     <Alert color="red">
                         <div className="flex items-center gap-4">
                             <Info />
@@ -62,7 +61,7 @@ const PassportEtourTableLayout: React.FC<PassportEtourTableLayoutProps> = ({ for
                         </div>
                     </Alert>
                 )}
-                <Button onClick={onSaveAndUpdateEtour} disabled={isGuestLimitedExceed}>
+                <Button onClick={onSaveAndUpdateEtour} disabled={isGuestLimitedExceed && totalGuest.totalGuest !== 0}>
                     <p>
                         Cập nhật eTour
                     </p>

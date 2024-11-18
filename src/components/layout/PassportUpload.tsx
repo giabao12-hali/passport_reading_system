@@ -92,7 +92,7 @@ const PassportUpload: React.FC<PassportUploadProps> = ({ dataUpload, formatDate,
     if (loadingPassportUpload) {
         return (
             <div className="flex flex-row justify-center gap-3 items-center">
-                <span className="pl-3">Đang tải dữ liệu...</span>
+                <span className="pl-3">Đang xử lý dữ liệu...</span>
                 <Spinner aria-label="Spinner button example" size="md" />
             </div>
         )
