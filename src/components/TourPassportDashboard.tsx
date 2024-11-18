@@ -8,6 +8,7 @@ import CustomToast from "./UI/CustomToast";
 import CopyLinkModal from "./UI/Modal/CopyLinkModal";
 import PassportEtourTableLayout from "./layout/TableLayout";
 import { FileInput, Label } from "flowbite-react";
+import TableLayoutNew from "./layout/TableLayoutNew";
 // import ButtonFloatActionsMobile from "./UI/ButtonFloatActionsMobile";
 // import { Info } from "lucide-react";
 
@@ -153,7 +154,7 @@ const TourPassportDashboard: React.FC = () => {
         console.log("filteredDataCombine", filteredDataCombine);
         const filteredData = removeNullFields(filteredDataCombine);
 
-        const message = {copyAll: JSON.stringify(filteredData, null, 2)};
+        const message = { copyAll: JSON.stringify(filteredData, null, 2) };
         console.log("Dữ liệu Passport: ", message);
 
         window.parent.postMessage(message, '*');
@@ -225,7 +226,7 @@ const TourPassportDashboard: React.FC = () => {
                         />
                     </div>
                 </div>
-                <div className="flex gap-2 mt-12 flex-col border-b border-solid border-black desktop:w-1/2 p-2.5 mobile:mt-4 mb-4 mobile:w-full">
+                {/* <div className="flex gap-2 mt-12 flex-col border-b border-solid border-black desktop:w-1/2 p-2.5 mobile:mt-4 mb-4 mobile:w-full">
                     <h1 className="font-semibold text-gray-900 uppercase">Ghi chú:</h1>
                     <div className="flex gap-12 mobile:flex-col mobile:gap-2">
                         <div className="flex items-center gap-4">
@@ -245,9 +246,19 @@ const TourPassportDashboard: React.FC = () => {
                             <p className="text-balance">Chưa đối soát</p>
                         </div>
                     </div>
-                </div>
+                </div> */}
                 <div className="w-full my-12">
-                    <PassportEtourTableLayout
+                    {/* <PassportEtourTableLayout
+                        formatDate={formatDate}
+                        formatSex={formatSex}
+                        loading={loading}
+                        dataExtract={dataExtract}
+                        dataEtour={dataEtour}
+                        onDeletePassport={handleDeletePassport}
+                        onSaveAndUpdateEtour={handleSaveAndUpdateEtour}
+                        totalGuest={totalGuest}
+                    /> */}
+                    <TableLayoutNew
                         formatDate={formatDate}
                         formatSex={formatSex}
                         loading={loading}
