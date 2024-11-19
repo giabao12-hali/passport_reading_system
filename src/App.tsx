@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Index from './components';
 import TourPassportDashboard from './components/TourPassportDashboard';
-
 function App() {
   return (
     <div className="w-full min-h-screen">

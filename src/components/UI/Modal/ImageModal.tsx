@@ -11,7 +11,7 @@ const ImageModal: React.FC<ImageModalProps> = ({ isOpen, imageUrl, onClose }) =>
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="bg-white rounded-lg p-6 space-y-4 max-w-lg w-full">
+            <div className="bg-white rounded-lg p-6 space-y-4 max-w-sm w-full">
                 <h2 className="text-xl font-semibold">Hình ảnh Passport</h2>
                 <img
                     src={imageUrl}

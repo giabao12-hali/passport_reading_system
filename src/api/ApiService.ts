@@ -7,15 +7,16 @@ export const fetchUploadApi = async (files: FileList, bookingId: string) => {
 
   const response = await axios.post(
     `https://ocr-images.vietravel.com/extract-o-imgs-compare?bookingId=${bookingId}`,
-    formData,{
+    formData,
+    {
       headers: {
         "Content-Type": "multipart/form-data",
-      }
+      },
     }
   );
 
   const dataUpload = response.data.dataExtract as ApiPassportResponse[];
-  return dataUpload
+  return dataUpload;
 };
 
 export const savePassportDataApi = async (
@@ -65,3 +66,45 @@ export const deletePassportDataApi = async (id: number) => {
     console.log("Delete fail:", error);
   }
 };
+
+export const updatePassportDataApi = async (
+  id: number,
+  updateData: ApiPassportResponse[] // Dữ liệu hiện tại là mảng
+) => {
+  try {
+    // Chỉ lấy object đầu tiên trong mảng để gửi
+    const response = await axios.put(
+      `http://ocr-images.vietravel.com/update-by-id?id=${id}`,
+      updateData[0], // Gửi object thay vì mảng
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.log("Update fail:", error);
+    throw error; // Re-throw lỗi để xử lý tiếp ở nơi gọi hàm
+  }
+};
+
+// export const updatePassportDataApi = async (
+//   id: number,
+//   updateData: ApiPassportResponse[]
+// ) => {
+//   try {
+//     const response = await axios.put(
+//       `http://ocr-images.vietravel.com/update-by-id?id=${id}`,
+//       updateData,
+//       {
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+//     return response.data;
+//   } catch (error) {
+//     console.log("Update fail:", error);
+//   }
+// };
