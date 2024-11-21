@@ -29,6 +29,10 @@ const TourPassportDashboard: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [loadingPassportUpload, setLoadingPassportUpload] = useState(false);
 
+    // Checkbox update
+    const [onlySelected, setOnlySelected] = useState(false);
+    const [selectedPassports, setSelectedPassports] = useState<number[]>([]);
+
     //#region QR Code Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
     const qrCode = window.location.href;
@@ -90,7 +94,7 @@ const TourPassportDashboard: React.FC = () => {
                 if (response.dataExtract.length > 0) {
                     setActiveComponent("table");
                 } else {
-                    setActiveComponent("read");
+                    setActiveComponent("table");
                 }
             } catch (error) {
                 console.log("Error fetching passport data", error);
@@ -160,16 +164,24 @@ const TourPassportDashboard: React.FC = () => {
     // }
 
     const handleSaveAndUpdateEtour = () => {
-        const filteredDataCombine = [dataExtract];
-        console.log("filteredDataCombine", filteredDataCombine);
-        const filteredData = removeNullFields(filteredDataCombine);
+        if (onlySelected) {
+            const selectedData = dataExtract.filter(passport =>
+                selectedPassports.includes(passport.id as number)
+            );
+            const selectedMessage = { copyAll: JSON.stringify(selectedData, null, 2) };
+            console.log("Dữ liệu được chọn", selectedMessage);
+            window.parent.postMessage(selectedMessage, '*');
+        } else {
+            const filteredDataCombine = [dataExtract];
+            const filteredData = removeNullFields(filteredDataCombine);
+            const message = { copyAll: JSON.stringify(filteredData, null, 2) };
+            console.log("Dữ liệu passport:", message)
+            window.parent.postMessage(message, '*');
+        }
 
-        const message = { copyAll: JSON.stringify(filteredData, null, 2) };
-        console.log("Dữ liệu Passport: ", message);
-
-        window.parent.postMessage(message, '*');
         showToastMessage("Đang cập nhật dữ liệu...", "info");
     };
+
 
     // const handleSaveTemp = (updatedData: ApiPassportResponse[]) => {
     //     setDataUpload(updatedData);
@@ -242,7 +254,7 @@ const TourPassportDashboard: React.FC = () => {
             <div className="px-12 py-2">
                 <div className="flex justify-between mb-4 gap-4 mobile:flex-col">
                     <div>
-                        <button className="px-4 py-2 rounded-lg border border-solid border-black hover:text-white hover:bg-black hover:border-white hover:transition-all hover:duration-300 hover:ease-in-out" onClick={QrCodeModalOpen}>
+                        <button className="px-4 py-2 rounded-lg border border-solid border-black hover:text-white hover:bg-black hover:border-white transition-all duration-300 ease-in-out" onClick={QrCodeModalOpen}>
                             Hiển thị mã QR Code
                         </button>
                     </div>
@@ -341,6 +353,8 @@ const TourPassportDashboard: React.FC = () => {
                             onDeletePassport={handleDeletePassport}
                             onSaveAndUpdateEtour={handleSaveAndUpdateEtour}
                             totalGuest={totalGuest}
+                            onSelectedPassportsChange={setSelectedPassports}
+                            setOnlySelected={setOnlySelected}
                         />
                     ) : (
                         <React.Fragment>

@@ -1,6 +1,6 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ApiPassportResponse, ApiTotalResponse, eTourCustomer } from "../../api/interfaces";
-import { Alert, Button, Card, Spinner, Table, Tooltip } from "flowbite-react";
+import { Alert, Button, Card, Checkbox, Label, Spinner, Table, Tooltip } from "flowbite-react";
 import { Info, Image, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import ImageModal from "../UI/Modal/ImageModal";
 
@@ -13,10 +13,28 @@ interface TableLayoutNewProps {
     onDeletePassport: (id: number) => Promise<void>;
     onSaveAndUpdateEtour: () => void;
     totalGuest: ApiTotalResponse;
+    onSelectedPassportsChange: (selectedIds: number[]) => void;
+    setOnlySelected: (value: boolean) => void;
 }
 
-const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, loading, dataExtract, dataEtour, onDeletePassport, onSaveAndUpdateEtour, totalGuest }) => {
+const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, loading, dataExtract, dataEtour, onDeletePassport, onSaveAndUpdateEtour, totalGuest, onSelectedPassportsChange, setOnlySelected }) => {
     const noMatchPassport = useRef<HTMLDivElement | null>(null);
+
+    //#region Checkbox
+    const [selectedPassports, setSelectedPassports] = useState<number[]>([]);
+    const handleCheckboxChange = (passportId: number, isChecked: boolean): void => {
+        setSelectedPassports((prevSelected) =>
+            isChecked
+                ? [...prevSelected, passportId]
+                : prevSelected.filter((id) => id !== passportId)
+        );
+        setOnlySelected(isChecked || selectedPassports.length > 0);
+    };
+    useEffect(() => {
+        onSelectedPassportsChange(selectedPassports);
+    }, [selectedPassports, onSelectedPassportsChange]);
+    //#endregion
+
 
     //#region Modal open Passport Image
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -135,9 +153,15 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                             {dataExtract.filter((passport) => passport.isSimilar && passport.passportNo === etour.passportNo && etour.isSimilar)
                                 .map((passport, mapIndex) => (
                                     <Card key={mapIndex} className="bg-yellow-100" >
-                                        <h5 className="text-2xl font-bold">
-                                            Khách {etourIndex + 1}
-                                        </h5>
+                                        <div className="flex justify-between items-center">
+                                            <h5 className="text-2xl font-bold">
+                                                Khách {etourIndex + 1}
+                                            </h5>
+                                            <div className="flex items-center gap-2">
+                                                <Checkbox id={`select-passport-${mapIndex}`} onChange={(e) => handleCheckboxChange(passport.id!, e.target.checked)} />
+                                                <Label htmlFor="select-passport">Chọn</Label>
+                                            </div>
+                                        </div>
                                         <div className="grid grid-cols-3 gap-4 mobile:flex mobile:flex-col tablet:flex tablet:flex-col">
                                             <div>
                                                 <div className="space-y-4">
@@ -215,6 +239,7 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                                                     </p>
                                                     <div className="border border-solid border-gray-900 opacity-10"></div>
                                                     <div className="flex justify-end items-center gap-4">
+
                                                         <Tooltip content="Xóa">
                                                             <button onClick={() => passport.id !== undefined && onDeletePassport(passport.id)} className="px-4 py-3 bg-red-500 hover:bg-red-700 hover:transition-all hover:duration-300 hover:ease-in-out rounded-xl">
                                                                 Xóa
