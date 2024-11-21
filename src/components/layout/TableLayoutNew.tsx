@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
 import { ApiPassportResponse, ApiTotalResponse, eTourCustomer } from "../../api/interfaces";
 import { Alert, Button, Card, Spinner, Table, Tooltip } from "flowbite-react";
-import {Info, Image, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Info, Image, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import ImageModal from "../UI/Modal/ImageModal";
 
 interface TableLayoutNewProps {
@@ -58,7 +58,7 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                 {totalGuest.totalGuest !== 0 && isGuestLimitedExceed && (
                     <Alert color="red">
                         <div className="flex items-center gap-4">
-                            <Info className="mobile:size-12"/>
+                            <Info className="mobile:size-12" />
                             <span className="mobile:text-balance mobile:text-center">Danh sách khách chưa so sánh dữ liệu vượt quá mức số cho phép của số lượng khách eTour</span>
                         </div>
                     </Alert>
@@ -130,15 +130,9 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                                     </span>
                                 </p>
                             </div>
-                            <Alert color="blue">
-                                <div className="flex items-center gap-4">
-                                    <Info />
-                                    <span>Danh sách dữ liệu eTour</span>
-                                </div>
-                            </Alert>
                         </div>
                         <div className="w-1/2 flex flex-col mobile:w-full">
-                            {dataExtract.filter((passport) => passport.isSimilar && passport.passportNo === etour.passportNo)
+                            {dataExtract.filter((passport) => passport.isSimilar && passport.passportNo === etour.passportNo && etour.isSimilar)
                                 .map((passport, mapIndex) => (
                                     <Card key={mapIndex} className="bg-yellow-100" >
                                         <h5 className="text-2xl font-bold">
@@ -149,53 +143,73 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                                                 <div className="space-y-4">
                                                     <p className="font-bold">
                                                         Họ tên:&nbsp;
-                                                        <span>{passport.fullName ?? "Chưa có thông tin"}</span>
+                                                        <span
+                                                            className={`font-bold ${passport.fullName !== etour.fullName ? "text-red-600 font-semibold" : "text-gray-900 dark:text-white"}`}
+                                                        >
+                                                            {passport.fullName ?? "Chưa có thông tin"}
+                                                        </span>
                                                     </p>
                                                     <p>
                                                         Giới tính:&nbsp;
-                                                        <span>
+                                                        <span
+                                                            className={passport.sex !== etour.sex ? "text-red-600 font-semibold" : ""}
+                                                        >
                                                             {passport.sex !== undefined ? formatSex(passport.sex) : "Chưa có thông tin"}
                                                         </span>
                                                     </p>
                                                     <p>
                                                         Địa chỉ:&nbsp;
-                                                        <span>
+                                                        <span
+                                                            className={passport.address !== etour.address ? "text-red-600 font-semibold" : ""}
+                                                        >
                                                             {passport.address ?? "Chưa có thông tin"}
                                                         </span>
                                                     </p>
                                                     <p>
                                                         Quốc tịch:&nbsp;
-                                                        <span>
+                                                        <span
+                                                            className={passport.nationality !== etour.nationality ? "text-red-500" : ""}
+                                                        >
                                                             {passport.nationality ?? "Chưa có thông tin"}
                                                         </span>
                                                     </p>
                                                     <p className="font-bold">
                                                         Số Passport:&nbsp;
-                                                        <span>
+                                                        <span
+                                                            className={`font-bold ${passport.passportNo !== etour.passportNo ? "text-red-600 font-semibold" : "text-gray-900 dark:text-white"}`}
+                                                        >
                                                             {passport.passportNo ?? "Chưa có thông tin"}
                                                         </span>
                                                     </p>
                                                     <p>
                                                         Ngày sinh:&nbsp;
-                                                        <span>
+                                                        <span
+                                                            className={passport.dateOfBirth !== etour.dateOfBirth ? "text-red-600 font-semibold" : ""}
+                                                        >
                                                             {passport.dateOfBirth ? formatDate(passport.dateOfBirth) : "Chưa có thông tin"}
                                                         </span>
                                                     </p>
                                                     <p>
                                                         Ngày cấp:&nbsp;
-                                                        <span>
+                                                        <span
+                                                            className={passport.dateOfIssue !== etour.dateOfIssue ? "text-red-600 font-semibold" : ""}
+                                                        >
                                                             {passport.dateOfIssue ? formatDate(passport.dateOfIssue) : "Chưa có thông tin"}
                                                         </span>
                                                     </p>
                                                     <p>
                                                         Ngày hết hạn:&nbsp;
-                                                        <span>
+                                                        <span
+                                                            className={passport.dateOfExpiry !== etour.dateOfExpiry ? "text-red-600 font-semibold" : ""}
+                                                        >
                                                             {passport.dateOfExpiry ? formatDate(passport.dateOfExpiry) : "Chưa có thông tin"}
                                                         </span>
                                                     </p>
                                                     <p className="font-bold">
                                                         Số CCCD/CMND:&nbsp;
-                                                        <span>
+                                                        <span
+                                                            className={`font-bold ${passport.idCardNo !== etour.idCardNo ? "text-red-600 font-semibold" : "text-gray-900 dark:text-white"}`}
+                                                        >
                                                             {passport.idCardNo ?? "Chưa có thông tin"}
                                                         </span>
                                                     </p>
@@ -292,7 +306,7 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                                 behavior: "smooth"
                             });
                         }}
-                        className="bg-cyan-500 p-2.5 rounded-lg text-white text-sm w-full opacity-90"
+                        className="bg-cyan-500 p-2.5 rounded-full text-white text-sm w-full opacity-90 animate-bounce"
                     >
                         <ChevronUp />
                     </button>
@@ -302,7 +316,7 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                         onClick={() => {
                             noMatchPassport.current?.scrollIntoView({ behavior: "smooth" });
                         }}
-                        className="bg-cyan-500 p-2.5 rounded-lg text-white text-sm w-full opacity-90"
+                        className="bg-cyan-500 p-2.5 rounded-full text-white text-sm w-full opacity-90 animate-bounce"
                     >
                         <ChevronDown />
                     </button>

@@ -48,5 +48,6 @@ export interface eTourCustomer{
   dateOfExpiry?: string
   imageUrl?: string,
   isSimilar: boolean,
-  address?: string
+  address?: string,
+  isOpen: boolean,
 }

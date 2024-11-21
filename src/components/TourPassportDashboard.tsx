@@ -23,7 +23,7 @@ const TourPassportDashboard: React.FC = () => {
         extract: dataExtract
     });
 
-    const [activeComponent, setActiveComponent] = useState<"table" | "read">("read");
+    const [activeComponent, setActiveComponent] = useState<"table" | "read">("table");
 
     // Loading
     const [loading, setLoading] = useState(false);
