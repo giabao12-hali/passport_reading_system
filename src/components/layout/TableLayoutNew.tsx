@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ApiPassportResponse, ApiTotalResponse, eTourCustomer } from "../../api/interfaces";
 import { Alert, Button, Card, Checkbox, Label, Spinner, Table, Tooltip } from "flowbite-react";
 import { Info, Image, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import ImageModal from "../UI/Modal/ImageModal";
+import { useLocation } from "react-router-dom";
 
 interface TableLayoutNewProps {
     formatDate: (dateString: string) => string;
@@ -19,6 +20,12 @@ interface TableLayoutNewProps {
 
 const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, loading, dataExtract, dataEtour, onDeletePassport, onSaveAndUpdateEtour, totalGuest, onSelectedPassportsChange, setOnlySelected }) => {
     const noMatchPassport = useRef<HTMLDivElement | null>(null);
+
+    //#region Set Location
+    const locaiton = useLocation();
+    const params = new URLSearchParams(locaiton.search);
+    const isEtourEnabled = params.get("etour") === "1";
+    //#endregion
 
     //#region Checkbox
     const [selectedPassports, setSelectedPassports] = useState<number[]>([]);
@@ -52,6 +59,37 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
     }
     //#endregion
 
+    //#region Comparasion
+    const trimAndNormalize = (str?: string | null): string => {
+        if (!str) return ""; // Xử lý null hoặc undefined
+        return str.replace(/[\t\n]/g, "").trim(); // Loại bỏ \t, \n và trim
+    };
+
+    const differences = useMemo(() => {
+        return dataExtract.map((passport) => {
+            const matchingEtour = dataEtour.find(
+                (etour) => etour.isSimilar === passport.isSimilar
+            );
+            return matchingEtour
+                ? {
+                    id: passport.id,
+                    isNameDifferent: passport.fullName !== trimAndNormalize(matchingEtour.fullName),
+                    isSexDifferent: passport.sex !== matchingEtour.sex,
+                    isAddressDifferent: passport.address !== matchingEtour.address,
+                    isNationalityDifferent: passport.nationality !== matchingEtour.nationality,
+                    isPassportNoDifferent: passport.passportNo !== matchingEtour.passportNo,
+                    isDateOfBirthDifferent: passport.dateOfBirth !== matchingEtour.dateOfBirth,
+                    isDateOfIssueDifferent: passport.dateOfIssue !== matchingEtour.dateOfIssue,
+                    isDateOfExpiryDifferent: passport.dateOfExpiry !== matchingEtour.dateOfExpiry,
+                    isIdCardNoDifferent: passport.idCardNo !== matchingEtour.idCardNo,
+                    isIsimilar: passport.isSimilar === matchingEtour.isSimilar,
+                }
+                : null;
+        });
+    }, [dataExtract, dataEtour]);
+
+    //#endregion
+
     //#region Loading & Error
     if (loading) {
         return (
@@ -81,76 +119,296 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                         </div>
                     </Alert>
                 )}
-                <Button onClick={onSaveAndUpdateEtour} disabled={isGuestLimitedExceed && totalGuest.totalGuest !== 0}>
-                    <p>
-                        Cập nhật eTour
-                    </p>
-                </Button>
+                {isEtourEnabled && (
+                    <Button onClick={onSaveAndUpdateEtour} disabled={isGuestLimitedExceed && totalGuest.totalGuest !== 0}>
+                        <p>
+                            Cập nhật eTour
+                        </p>
+                    </Button>
+                )}
             </div>
-            <div className="space-y-8 w-full">
-                {dataEtour.map((etour, etourIndex) => (
-                    <div key={etourIndex} className="flex justify-between gap-8 mobile:flex-col">
-                        <div className="bg-green-100 w-1/2 p-4 rounded-lg shadow-lg border border-solid border-gray-900 border-opacity-10 space-y-4 mobile:w-full">
+            <div className="grid grid-cols-2 gap-4 mobile:hidden">
+                <div id="etour" className="space-y-4">
+                    {dataEtour.map((etour, etourIndex) => (
+                        <div className="bg-green-100 p-4 max-h-fit rounded-lg shadow-lg border border-solid border-gray-900 border-opacity-10 space-y-4 mobile:w-full" key={etourIndex}>
                             <h5 className="text-2xl font-bold">
                                 Khách {etourIndex + 1}
                             </h5>
                             <div className="space-y-4">
-                                <p className="font-bold">
-                                    Họ tên:&nbsp;
-                                    <span>{etour.fullName ?? "Chưa có thông tin"}</span>
-                                </p>
-                                <p>
-                                    Giới tính:&nbsp;
+                                <div id="fullName">
+                                    <p className="font-bold">
+                                        Họ tên:&nbsp;
+                                    </p>
+                                    <span className="font-bold">{etour.fullName ?? "Chưa có thông tin"}</span>
+                                </div>
+                                <div id="sex">
+                                    <p>
+                                        Giới tính:&nbsp;
+                                    </p>
                                     <span>
                                         {etour.sex !== undefined ? formatSex(etour.sex) : "Chưa có thông tin"}
                                     </span>
-                                </p>
-                                <p>
-                                    Địa chỉ:&nbsp;
+                                </div>
+                                <div id="address">
+                                    <p>
+                                        Địa chỉ:&nbsp;
+                                    </p>
                                     <span>
                                         {etour.address ?? "Chưa có thông tin"}
                                     </span>
-                                </p>
-                                <p>
-                                    Quốc tịch:&nbsp;
+                                </div>
+                                <div id="nationality">
+                                    <p>
+                                        Quốc tịch:&nbsp;
+                                    </p>
                                     <span>
                                         {etour.nationality ?? "Chưa có thông tin"}
                                     </span>
-                                </p>
-                                <p className="font-bold">
-                                    Số Passport:&nbsp;
-                                    <span>
+                                </div>
+                                <div id="passportNo">
+                                    <p className="font-bold">
+                                        Số Passport:&nbsp;
+                                    </p>
+                                    <span className="font-bold">
                                         {etour.passportNo ?? "Chưa có thông tin"}
                                     </span>
-                                </p>
-                                <p>
-                                    Ngày sinh:&nbsp;
+                                </div>
+                                <div id="dateOfBirth">
+                                    <p>
+                                        Ngày sinh:&nbsp;
+                                    </p>
                                     <span>
                                         {etour.dateOfBirth ? formatDate(etour.dateOfBirth) : "Chưa có thông tin"}
                                     </span>
-                                </p>
-                                <p>
-                                    Ngày cấp:&nbsp;
+                                </div>
+                                <div id="dateOfIssue">
+                                    <p>
+                                        Ngày cấp:&nbsp;
+                                    </p>
                                     <span>
                                         {etour.dateOfIssue ? formatDate(etour.dateOfIssue) : "Chưa có thông tin"}
                                     </span>
-                                </p>
-                                <p>
-                                    Ngày hết hạn:&nbsp;
+                                </div>
+                                <div id="dateOfExpiry">
+                                    <p>
+                                        Ngày hết hạn:&nbsp;
+                                    </p>
                                     <span>
                                         {etour.dateOfExpiry ? formatDate(etour.dateOfExpiry) : "Chưa có thông tin"}
                                     </span>
-                                </p>
-                                <p className="font-bold">
-                                    Số CCCD/CMND:&nbsp;
-                                    <span>
+                                </div>
+                                <div id="idCardNo">
+                                    <p className="font-bold">
+                                        Số CCCD/CMND:&nbsp;
+                                    </p>
+                                    <span className="font-bold">
                                         {etour.idCardNo ?? "Chưa có thông tin"}
                                     </span>
-                                </p>
+                                </div>
                             </div>
                         </div>
-                        <div className="w-1/2 flex flex-col mobile:w-full">
-                            {dataExtract.filter((passport) => passport.isSimilar && passport.passportNo === etour.passportNo && etour.isSimilar)
+                    ))}
+                </div>
+                <div id="passport" className="space-y-4">
+                    {dataExtract.filter((passport) => passport.isSimilar)
+                        .map((passport, passportIndex) => {
+                            const diff = differences.find((diff) => diff?.isIsimilar === passport.isSimilar);
+                            if (!diff) return null;
+                            return (
+                                <div className="bg-yellow-100 p-4 rounded-lg shadow-lg border border-solid border-gray-900 border-opacity-10 space-y-4 mobile:w-full" key={passportIndex}>
+                                    <div className="flex justify-between items-center">
+                                        <h5 className="text-2xl font-bold">
+                                            Khách {passportIndex + 1}
+                                        </h5>
+                                        <div className="flex items-center gap-2">
+                                            <Checkbox id={`select-passport-${passportIndex}`} onChange={(e) => handleCheckboxChange(passport.id!, e.target.checked)} />
+                                            <Label htmlFor="select-passport">Chọn</Label>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-4">
+                                            <div id="name">
+                                                <p className="font-bold">
+                                                    Họ tên:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={`font-bold ${diff.isNameDifferent ? "text-red-600" : ""}`}
+                                                >
+                                                    {passport.fullName ?? "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                            <div id="sex">
+                                                <p>
+                                                    Giới tính:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={diff.isSexDifferent ? "text-red-600" : ""}
+                                                >
+                                                    {passport.sex !== undefined ? formatSex(passport.sex) : "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                            <div id="address">
+                                                <p>
+                                                    Địa chỉ:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={diff.isAddressDifferent ? "text-red-600" : ""}
+                                                >
+                                                    {passport.address ?? "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                            <div id="nationality">
+                                                <p>
+                                                    Quốc tịch:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={diff.isNationalityDifferent ? "text-red-600" : ""}
+                                                >
+                                                    {passport.nationality ?? "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                            <div id="passportNo">
+                                                <p className="font-bold">
+                                                    Số Passport:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={`font-bold ${diff.isPassportNoDifferent ? "text-red-600" : ""}`}
+                                                >
+                                                    {passport.passportNo ?? "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                            <div id="dateOfBirth">
+                                                <p>
+                                                    Ngày sinh:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={diff.isDateOfBirthDifferent ? "text-red-600" : ""}
+                                                >
+                                                    {passport.dateOfBirth ? formatDate(passport.dateOfBirth) : "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                            <div id="dateOfIssue">
+                                                <p>
+                                                    Ngày cấp:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={diff.isDateOfIssueDifferent ? "text-red-600" : ""}
+                                                >
+                                                    {passport.dateOfIssue ? formatDate(passport.dateOfIssue) : "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                            <div id="dateOfExpiry">
+                                                <p>
+                                                    Ngày hết hạn:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={diff.isDateOfExpiryDifferent ? "text-red-600" : ""}
+                                                >
+                                                    {passport.dateOfExpiry ? formatDate(passport.dateOfExpiry) : "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                            <div id="idCardNo">
+                                                <p className="font-bold">
+                                                    Số CCCD/CMND:&nbsp;
+                                                </p>
+                                                <span
+                                                    className={`font-bold ${diff.isIdCardNoDifferent ? "text-red-600" : ""}`}
+                                                >
+                                                    {passport.idCardNo ?? "Chưa có thông tin"}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <img src={passport.imageUrl} alt={passport.fullName} className="rounded-lg w-full" />
+                                        </div>
+                                    </div>
+                                </div>
+                            )
+                        })}
+                </div>
+            </div>
+            <div className="space-y-8 w-full hidden mobile:block">
+                {dataEtour.map((etour, etourIndex) => (
+                    <div key={etourIndex} className="flex flex-col gap-4">
+                        <div className="bg-green-100 p-4 rounded-lg shadow-lg border border-solid border-gray-900 border-opacity-10 space-y-4 mobile:w-full">
+                            <h5 className="text-2xl font-bold">
+                                Khách {etourIndex + 1}
+                            </h5>
+                            <div className="space-y-4">
+                                <div id="fullName">
+                                    <p className="font-bold">
+                                        Họ tên:&nbsp;
+                                    </p>
+                                    <span className="font-bold">{etour.fullName ?? "Chưa có thông tin"}</span>
+                                </div>
+                                <div id="sex">
+                                    <p>
+                                        Giới tính:&nbsp;
+                                    </p>
+                                    <span>
+                                        {etour.sex !== undefined ? formatSex(etour.sex) : "Chưa có thông tin"}
+                                    </span>
+                                </div>
+                                <div id="address">
+                                    <p>
+                                        Địa chỉ:&nbsp;
+                                    </p>
+                                    <span>
+                                        {etour.address ?? "Chưa có thông tin"}
+                                    </span>
+                                </div>
+                                <div id="nationality">
+                                    <p>
+                                        Quốc tịch:&nbsp;
+                                    </p>
+                                    <span>
+                                        {etour.nationality ?? "Chưa có thông tin"}
+                                    </span>
+                                </div>
+                                <div id="passportNo">
+                                    <p className="font-bold">
+                                        Số Passport:&nbsp;
+                                    </p>
+                                    <span className="font-bold">
+                                        {etour.passportNo ?? "Chưa có thông tin"}
+                                    </span>
+                                </div>
+                                <div id="dateOfBirth">
+                                    <p>
+                                        Ngày sinh:&nbsp;
+                                    </p>
+                                    <span>
+                                        {etour.dateOfBirth ? formatDate(etour.dateOfBirth) : "Chưa có thông tin"}
+                                    </span>
+                                </div>
+                                <div id="dateOfIssue">
+                                    <p>
+                                        Ngày cấp:&nbsp;
+                                    </p>
+                                    <span>
+                                        {etour.dateOfIssue ? formatDate(etour.dateOfIssue) : "Chưa có thông tin"}
+                                    </span>
+                                </div>
+                                <div id="dateOfExpiry">
+                                    <p>
+                                        Ngày hết hạn:&nbsp;
+                                    </p>
+                                    <span>
+                                        {etour.dateOfExpiry ? formatDate(etour.dateOfExpiry) : "Chưa có thông tin"}
+                                    </span>
+                                </div>
+                                <div id="idCardNo">
+                                    <p className="font-bold">
+                                        Số CCCD/CMND:&nbsp;
+                                    </p>
+                                    <span className="font-bold">
+                                        {etour.idCardNo ?? "Chưa có thông tin"}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="">
+                            {dataExtract.filter((passport) => passport.isSimilar && passport.fullName === etour.fullName)
                                 .map((passport, mapIndex) => (
                                     <Card key={mapIndex} className="bg-yellow-100" >
                                         <div className="flex justify-between items-center">
@@ -165,87 +423,97 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                                         <div className="grid grid-cols-3 gap-4 mobile:flex mobile:flex-col tablet:flex tablet:flex-col">
                                             <div>
                                                 <div className="space-y-4">
-                                                    <p className="font-bold">
-                                                        Họ tên:&nbsp;
+                                                    <div id="name">
+                                                        <p className="font-bold">
+                                                            Họ tên:&nbsp;
+                                                        </p>
                                                         <span
                                                             className={`font-bold ${passport.fullName !== etour.fullName ? "text-red-600 font-semibold" : "text-gray-900 dark:text-white"}`}
                                                         >
                                                             {passport.fullName ?? "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <p>
-                                                        Giới tính:&nbsp;
+                                                    </div>
+                                                    <div id="sex">
+                                                        <p>
+                                                            Giới tính:&nbsp;
+                                                        </p>
                                                         <span
                                                             className={passport.sex !== etour.sex ? "text-red-600 font-semibold" : ""}
                                                         >
                                                             {passport.sex !== undefined ? formatSex(passport.sex) : "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <p>
-                                                        Địa chỉ:&nbsp;
+                                                    </div>
+                                                    <div id="address">
+                                                        <p>
+                                                            Địa chỉ:&nbsp;
+                                                        </p>
                                                         <span
                                                             className={passport.address !== etour.address ? "text-red-600 font-semibold" : ""}
                                                         >
                                                             {passport.address ?? "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <p>
-                                                        Quốc tịch:&nbsp;
+                                                    </div>
+                                                    <div id="nationality">
+                                                        <p>
+                                                            Quốc tịch:&nbsp;
+                                                        </p>
                                                         <span
-                                                            className={passport.nationality !== etour.nationality ? "text-red-500" : ""}
+                                                            className={passport.nationality !== etour.nationality ? "text-red-500 font-semibold" : ""}
                                                         >
                                                             {passport.nationality ?? "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <p className="font-bold">
-                                                        Số Passport:&nbsp;
+                                                    </div>
+                                                    <div id="passportNo">
+                                                        <p className="font-bold">
+                                                            Số Passport:&nbsp;
+                                                        </p>
                                                         <span
                                                             className={`font-bold ${passport.passportNo !== etour.passportNo ? "text-red-600 font-semibold" : "text-gray-900 dark:text-white"}`}
                                                         >
                                                             {passport.passportNo ?? "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <p>
-                                                        Ngày sinh:&nbsp;
+                                                    </div>
+                                                    <div id="dateOfBirth">
+                                                        <p>
+                                                            Ngày sinh:&nbsp;
+                                                        </p>
                                                         <span
                                                             className={passport.dateOfBirth !== etour.dateOfBirth ? "text-red-600 font-semibold" : ""}
                                                         >
                                                             {passport.dateOfBirth ? formatDate(passport.dateOfBirth) : "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <p>
-                                                        Ngày cấp:&nbsp;
+                                                    </div>
+                                                    <div id="dateOfIssue">
+                                                        <p>
+                                                            Ngày cấp:&nbsp;
+                                                        </p>
                                                         <span
                                                             className={passport.dateOfIssue !== etour.dateOfIssue ? "text-red-600 font-semibold" : ""}
                                                         >
                                                             {passport.dateOfIssue ? formatDate(passport.dateOfIssue) : "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <p>
-                                                        Ngày hết hạn:&nbsp;
+                                                    </div>
+                                                    <div id="dateOfExpiry">
+                                                        <p>
+                                                            Ngày hết hạn:&nbsp;
+                                                        </p>
                                                         <span
                                                             className={passport.dateOfExpiry !== etour.dateOfExpiry ? "text-red-600 font-semibold" : ""}
                                                         >
                                                             {passport.dateOfExpiry ? formatDate(passport.dateOfExpiry) : "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <p className="font-bold">
-                                                        Số CCCD/CMND:&nbsp;
+                                                    </div>
+                                                    <div id="idCardNo">
+                                                        <p className="font-bold">
+                                                            Số CCCD/CMND:&nbsp;
+                                                        </p>
                                                         <span
                                                             className={`font-bold ${passport.idCardNo !== etour.idCardNo ? "text-red-600 font-semibold" : "text-gray-900 dark:text-white"}`}
                                                         >
                                                             {passport.idCardNo ?? "Chưa có thông tin"}
                                                         </span>
-                                                    </p>
-                                                    <div className="border border-solid border-gray-900 opacity-10"></div>
-                                                    <div className="flex justify-end items-center gap-4">
-
-                                                        <Tooltip content="Xóa">
-                                                            <button onClick={() => passport.id !== undefined && onDeletePassport(passport.id)} className="px-4 py-3 bg-red-500 hover:bg-red-700 hover:transition-all hover:duration-300 hover:ease-in-out rounded-xl">
-                                                                Xóa
-                                                            </button>
-                                                        </Tooltip>
                                                     </div>
+                                                    <div className="border border-solid border-gray-900 opacity-10"></div>
                                                 </div>
                                             </div>
                                             <div className="col-span-2">
@@ -323,7 +591,7 @@ const TableLayoutNew: React.FC<TableLayoutNewProps> = ({ formatDate, formatSex, 
                 onClose={closeModal}
             />
             <div className="fixed flex flex-col items-end gap-2 top-[80%] mobile:top-2/3 tablet:top-2/3 right-0 z-10 mr-12">
-                <Tooltip content="Trở lên đầu trang">
+                <Tooltip content="Trở về đầu trang">
                     <button
                         onClick={() => {
                             window.scroll({

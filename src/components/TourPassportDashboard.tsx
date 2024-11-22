@@ -8,6 +8,7 @@ import CopyLinkModal from "./UI/Modal/CopyLinkModal";
 import { FileInput, Label, Spinner } from "flowbite-react";
 import TableLayoutNew from "./layout/TableLayoutNew";
 import ReadPassportOnly from "./layout/ReadPassportOnly";
+// import TableDemo from "./layout/TableDemo";
 // import ButtonFloatActionsMobile from "./UI/ButtonFloatActionsMobile";`
 // import { Info } from "lucide-react";
 
@@ -35,10 +36,17 @@ const TourPassportDashboard: React.FC = () => {
 
     //#region QR Code Modal
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const qrCode = window.location.href;
+    // const qrCode = window.location.href;
+    const qrCode = (() => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("etour");
+        return url.toString();
+    })();
 
     const handleCopyUrl = async () => {
-        const currentUrl = window.location.href;
+        const url = new URL(window.location.href);
+        url.searchParams.delete("etour");
+        const currentUrl = url.toString();
         try {
             await navigator.clipboard.writeText(currentUrl);
             showToastMessage("Đã sao chép đường dẫn thành công", "success");
@@ -172,8 +180,7 @@ const TourPassportDashboard: React.FC = () => {
             console.log("Dữ liệu được chọn", selectedMessage);
             window.parent.postMessage(selectedMessage, '*');
         } else {
-            const filteredDataCombine = [dataExtract];
-            const filteredData = removeNullFields(filteredDataCombine);
+            const filteredData = removeNullFields(dataExtract);
             const message = { copyAll: JSON.stringify(filteredData, null, 2) };
             console.log("Dữ liệu passport:", message)
             window.parent.postMessage(message, '*');
@@ -383,8 +390,11 @@ const TourPassportDashboard: React.FC = () => {
                             />
                         </React.Fragment>
                     )}
-
                 </div>
+                {/* <TableDemo
+                    dataEtour={dataEtour}
+                    dataExtract={dataExtract}
+                /> */}
                 {/* <div className="mt-4">
                     <PassportUpload
                         dataUpload={dataUpload}

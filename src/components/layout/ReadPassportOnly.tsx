@@ -124,10 +124,12 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                             Khách {index + 1}
                                         </h5>
                                     </div>
-                                    <div className="grid grid-cols-3 gap-4 mobile:flex mobile:flex-col tablet:flex tablet:flex-col">
+                                    <div className="grid grid-cols-2 gap-4 mobile:flex mobile:flex-col tablet:flex tablet:flex-col">
                                         <div className="space-y-4">
-                                            <p className="font-bold">
-                                                Họ tên:&nbsp;
+                                            <div id="fullName" className="font-bold">
+                                                <p>
+                                                    Họ tên:&nbsp;
+                                                </p>
                                                 {editRows.has(index) ? (
                                                     <InputWithIcon
                                                         Icon={<User />}
@@ -140,9 +142,11 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                                 ) : (
                                                     passport.fullName ?? "Chưa có thông tin"
                                                 )}
-                                            </p>
-                                            <p>
-                                                Giới tính:&nbsp;
+                                            </div>
+                                            <div id="sex">
+                                                <p>
+                                                    Giới tính:&nbsp;
+                                                </p>
                                                 {editRows.has(index) ? (
                                                     <select
                                                         value={passport.sex ? "Nam" : "Nữ"}
@@ -155,9 +159,11 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                                 ) : (
                                                     formatSex(passport.sex ?? true)
                                                 )}
-                                            </p>
-                                            <p>
-                                                Địa chỉ:&nbsp;
+                                            </div>
+                                            <div id="address">
+                                                <p>
+                                                    Địa chỉ:&nbsp;
+                                                </p>
                                                 {editRows.has(index) ? (
                                                     <InputWithIcon
                                                         Icon={<MapPin />}
@@ -170,9 +176,11 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                                 ) : (
                                                     passport.address ?? "Chưa có thông tin"
                                                 )}
-                                            </p>
-                                            <p>
-                                                Quốc tịch:&nbsp;
+                                            </div>
+                                            <div id="nationality">
+                                                <p>
+                                                    Quốc tịch:&nbsp;
+                                                </p>
                                                 {editRows.has(index) ? (
                                                     <InputWithIcon
                                                         Icon={<Earth />}
@@ -185,22 +193,11 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                                 ) : (
                                                     passport.nationality ?? "Chưa có thông tin"
                                                 )}
-                                            </p>
-                                            <p>
-                                                Ngày sinh:&nbsp;
-                                                {editRows.has(index) ? (
-                                                    <input
-                                                        type="date"
-                                                        value={passport.dateOfBirth ?? ""}
-                                                        onChange={(e) => handleDateInputChange(index, "dateOfBirth", e.target.value)}
-                                                        className="input rounded-md"
-                                                    />
-                                                ) : (
-                                                    formatDate(passport.dateOfBirth ?? "")
-                                                )}
-                                            </p>
-                                            <p className="font-bold">
-                                                Số Passport:&nbsp;
+                                            </div>
+                                            <div id="passportNo" className="font-bold">
+                                                <p>
+                                                    Số Passport:&nbsp;
+                                                </p>
                                                 {editRows.has(index) ? (
                                                     <InputWithIcon
                                                         Icon={<TicketsPlane />}
@@ -213,9 +210,26 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                                 ) : (
                                                     passport.passportNo ?? "Chưa có thông tin"
                                                 )}
-                                            </p>
-                                            <p>
-                                                Ngày cấp:&nbsp;
+                                            </div>
+                                            <div id="dateOfBirth">
+                                                <p>
+                                                    Ngày sinh:&nbsp;
+                                                </p>
+                                                {editRows.has(index) ? (
+                                                    <input
+                                                        type="date"
+                                                        value={passport.dateOfBirth ?? ""}
+                                                        onChange={(e) => handleDateInputChange(index, "dateOfBirth", e.target.value)}
+                                                        className="input rounded-md"
+                                                    />
+                                                ) : (
+                                                    formatDate(passport.dateOfBirth ?? "")
+                                                )}
+                                            </div>
+                                            <div id="dateOfIssue">
+                                                <p>
+                                                    Ngày cấp:&nbsp;
+                                                </p>
                                                 {editRows.has(index) ? (
                                                     <input
                                                         type="date"
@@ -226,9 +240,11 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                                 ) : (
                                                     formatDate(passport.dateOfIssue ?? "")
                                                 )}
-                                            </p>
-                                            <p>
-                                                Ngày hết hạn:&nbsp;
+                                            </div>
+                                            <div id="dateOfExpiry">
+                                                <p>
+                                                    Ngày hết hạn:&nbsp;
+                                                </p>
                                                 {editRows.has(index) ? (
                                                     <input
                                                         type="date"
@@ -239,7 +255,7 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                                 ) : (
                                                     formatDate(passport.dateOfExpiry ?? "")
                                                 )}
-                                            </p>
+                                            </div>
                                             <p className="font-bold">
                                                 Số CCCD/CMND:&nbsp;
                                                 {editRows.has(index) ? (
@@ -298,7 +314,7 @@ const ReadPassportOnly: React.FC<ReadPassportOnlyProps> = ({ formatDate, formatS
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="col-span-2">
+                                        <div className="">
                                             <img src={passport.imageUrl} alt={passport.fullName} className="rounded-md" />
                                         </div>
                                     </div>
